@@ -1,8 +1,11 @@
-name: Java CI with Gradle
+name: Publish Release
 
 on:
   release:
     types: [published]
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -33,7 +36,7 @@ jobs:
         id: find-jar
         run: |
           output="$(find plugin/build/libs/ ! -name "*-javadoc.jar" ! -name "*-sources.jar" -type f -printf "%f\n")"
-          echo "::set-output name=jarname::$output"
+          echo "jarname=$output" >> "$GITHUB_OUTPUT"
       - name: Upload to the GitHub release
         uses: actions/upload-release-asset@v1
         env:
@@ -44,6 +47,8 @@ jobs:
           asset_name: ${{ steps.find-jar.outputs.jarname }}
           asset_content_type: application/java-archive
       - name: Upload to Modrinth
+        if: ${{ secrets.MODRINTH_TOKEN != '' }}
+        continue-on-error: true
         uses: RubixDev/modrinth-upload@v1.0.0
         with:
           token: ${{ secrets.MODRINTH_TOKEN }}

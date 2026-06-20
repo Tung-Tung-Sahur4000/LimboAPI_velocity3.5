@@ -1,12 +1,17 @@
-name: Java CI with Gradle
+name: Build & Release
 
 on:
   push:
     branches:
       - master
+      - 'claude/**'
   pull_request:
     branches:
       - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -14,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
       - name: Set up JDK
         uses: actions/setup-java@v4.7.0
         with:
@@ -28,47 +35,33 @@ jobs:
           key: minecraft-${{ hashFiles('gradle.properties') }}
       - name: Build LimboAPI
         run: ./gradlew build
-      - name: Upload LimboAPI
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v4.6.2
         with:
           name: LimboAPI
           path: "*/build/libs/*.jar"
-      - uses: dev-drprasad/delete-tag-and-release@v0.2.1
-        if: ${{ github.event_name == 'push' }}
-        with:
-          delete_release: true
-          tag_name: dev-build
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Find git version
-        id: git-version
-        run: echo "id=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      - name: Find correct JAR
-        if: ${{ github.event_name == 'push' }}
-        id: find-jar
+      - name: Locate plugin JAR
+        id: jar
         run: |
-          output="$(find plugin/build/libs/ ! -name "*-javadoc.jar" ! -name "*-sources.jar" -type f -printf "%f\n")"
-          echo "::set-output name=jarname::$output"
-      - name: Release the build
-        if: ${{ github.event_name == 'push' }}
+          path="$(find plugin/build/libs -maxdepth 1 -name '*.jar' ! -name '*-javadoc.jar' ! -name '*-sources.jar' -printf '%p\n' | head -n1)"
+          echo "path=${path}" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "${path}")" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      # Create/refresh a GitHub Release with the jar on every push (incl. merges to master).
+      # Pull requests only build + upload an artifact (no release).
+      - name: Publish release
+        if: ${{ github.event_name != 'pull_request' }}
         uses: ncipollo/release-action@v1
         with:
-          artifacts: plugin/build/libs/${{ steps.find-jar.outputs.jarname }}
-          body: ${{ join(github.event.commits.*.message, '\n') }}
+          artifacts: ${{ steps.jar.outputs.path }}
+          tag: build-${{ steps.jar.outputs.sha }}
+          name: LimboAPI ${{ steps.jar.outputs.sha }} (${{ github.ref_name }})
+          body: |
+            Automated build of `${{ github.ref_name }}` at commit `${{ steps.jar.outputs.sha }}`.
+
+            **Plugin jar:** `${{ steps.jar.outputs.name }}` (download below).
           prerelease: true
-          name: Dev-build ${{ steps.git-version.outputs.id }}
-          tag: dev-build
-      - name: Upload to Modrinth
-        if: ${{ github.event_name == 'push' }}
-        uses: RubixDev/modrinth-upload@v1.0.0
-        with:
-          token: ${{ secrets.MODRINTH_TOKEN }}
-          file_path: plugin/build/libs/${{ steps.find-jar.outputs.jarname }}
-          name: Dev-build ${{ steps.git-version.outputs.id }}
-          version: ${{ steps.git-version.outputs.id }}
-          changelog: ${{ join(github.event.commits.*.message, '\n') }}
-          game_versions: 1.7.2
-          release_type: beta
-          loaders: velocity
-          featured: false
-          project_id: TZOteSf2
+          allowUpdates: true
+          makeLatest: true
+          removeArtifacts: true
+          token: ${{ secrets.GITHUB_TOKEN }}
