@@ -190,7 +190,7 @@ public class LoginListener {
           if (connection.getProtocolVersion().compareTo(ProtocolVersion.MINECRAFT_1_20_2) >= 0) {
             loginHandler.setPlayer(player);
           }
-          if (canRegisterConnection(player)) {
+          if (this.canRegisterConnection(player)) {
             if (!connection.isClosed()) {
               // Complete the Login process.
               int threshold = this.server.getConfiguration().getCompressionThreshold();
