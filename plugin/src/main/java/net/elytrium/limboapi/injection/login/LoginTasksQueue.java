@@ -89,6 +89,7 @@ public class LoginTasksQueue {
   private static final BiConsumer<Object, MinecraftConnection> MC_CONNECTION_SETTER;
   private static final MethodHandle CONNECT_TO_INITIAL_SERVER_METHOD;
   private static final MethodHandle SET_CLIENT_BRAND;
+  private static final MethodHandle MARK_LOGIN_EVENT_FIRED;
   public static final BiConsumer<ClientConfigSessionHandler, String> BRAND_CHANNEL_SETTER;
 
   private final LimboAPI plugin;
@@ -211,7 +212,9 @@ public class LoginTasksQueue {
     }
 
     Logger logger = LimboAPI.getLogger();
-    this.server.getEventManager().fire(new LoginEvent(this.player)).thenAcceptAsync(event -> {
+
+    MARK_LOGIN_EVENT_FIRED.invokeExact(this.player);
+    this.server.getEventManager().fire(new LoginEvent(this.player, null)).thenAcceptAsync(event -> {
       if (connection.isClosed()) {
         // The player was disconnected.
         this.server.getEventManager().fireAndForget(new DisconnectEvent(this.player, DisconnectEvent.LoginStatus.CANCELLED_BY_USER_BEFORE_COMPLETE));
@@ -220,15 +223,22 @@ public class LoginTasksQueue {
         if (reason.isPresent()) {
           this.player.disconnect0(reason.get(), false);
         } else {
-          if (this.server.registerConnection(this.player)) {
-            if (connection.getActiveSessionHandler() instanceof LoginConfirmHandler confirm) {
-              confirm.waitForConfirmation(() -> this.connectToServer(logger, this.player, connection));
-            } else {
-              this.connectToServer(logger, this.player, connection);
+          this.server.registerConnection(this.player).whenCompleteAsync((registered, err) -> {
+            if (err != null) {
+              logger.error("Exception while registering connection for {}", this.player, err);
+              this.player.disconnect0(Component.translatable("velocity.error.already-connected-proxy"), false);
+              return;
             }
-          } else {
-            this.player.disconnect0(Component.translatable("velocity.error.already-connected-proxy"), false);
-          }
+            if (registered) {
+              if (connection.getActiveSessionHandler() instanceof LoginConfirmHandler confirm) {
+                confirm.waitForConfirmation(() -> this.connectToServer(logger, this.player, connection));
+              } else {
+                this.connectToServer(logger, this.player, connection);
+              }
+            } else {
+              this.player.disconnect0(Component.translatable("velocity.error.already-connected-proxy"), false);
+            }
+          }, connection.eventLoop());
         }
       }
     }, connection.eventLoop()).exceptionally(t -> {
@@ -277,14 +287,16 @@ public class LoginTasksQueue {
       this.plugin.setActiveSessionHandler(connection, StateRegistry.CONFIG, configHandler);
     }
 
-    this.server.getEventManager().fire(new PostLoginEvent(this.player)).thenAccept(postLoginEvent -> {
-      try {
-        MC_CONNECTION_SETTER.accept(this.handler, connection);
-        CONNECT_TO_INITIAL_SERVER_METHOD.invoke((AuthSessionHandler) this.handler, this.player);
-      } catch (Throwable e) {
-        throw new ReflectionException(e);
-      }
-    });
+    this.server.getEventManager().fire(new PostLoginEvent(this.player))
+        .whenComplete((ignored, throwable) -> this.server.getPlayerRegistry().finalizeLogin(player))
+        .thenAccept(postLoginEvent -> {
+          try {
+            MC_CONNECTION_SETTER.accept(this.handler, connection);
+            CONNECT_TO_INITIAL_SERVER_METHOD.invoke((AuthSessionHandler) this.handler, this.player);
+          } catch (Throwable e) {
+            throw new ReflectionException(e);
+          }
+        });
   }
 
   static {
@@ -312,6 +324,9 @@ public class LoginTasksQueue {
 
       SET_CLIENT_BRAND = MethodHandles.privateLookupIn(ConnectedPlayer.class, MethodHandles.lookup())
           .findVirtual(ConnectedPlayer.class, "setClientBrand", MethodType.methodType(void.class, String.class));
+
+      MARK_LOGIN_EVENT_FIRED = MethodHandles.privateLookupIn(ConnectedPlayer.class, MethodHandles.lookup())
+          .findVirtual(ConnectedPlayer.class, "markLoginEventFired", MethodType.methodType(void.class));
 
       Field brandChannelField = ClientConfigSessionHandler.class.getDeclaredField("brandChannel");
       brandChannelField.setAccessible(true);

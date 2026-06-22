@@ -15,7 +15,7 @@ tasks.withType<JavaCompile> {
 }
 
 dependencies {
-    compileOnly(libs.minecraft.velocity.api)
+    compileOnly(libs.minecraft.velocityctd.api)
     api(libs.elytrium.commons.config)
     api(libs.elytrium.commons.utils)
     api(libs.elytrium.commons.velocity)

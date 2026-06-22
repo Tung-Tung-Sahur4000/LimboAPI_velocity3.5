@@ -2,6 +2,10 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         maven {
+            name = "velocityctd-repo"
+            url = uri("https://repo.velocityctd.com/snapshots/")
+        }
+        maven {
             name = "elytrium-repo"
             url = uri("https://maven.elytrium.net/repo/")
         }

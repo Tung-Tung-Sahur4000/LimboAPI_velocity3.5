@@ -99,6 +99,15 @@ public class Settings extends YamlConfig {
     @Comment("Should reduced debug info be enabled (reduced information in F3) if there is no preference for Limbo")
     public boolean REDUCED_DEBUG_INFO = false;
 
+    @Comment({
+        "The brand shown in the client's F3 debug screen while in a Limbo.",
+        "LimboAPI placeholders: {VERSION} - LimboAPI version, {LIMBO_NAME} - the Limbo's name.",
+        "Velocity-CTD placeholders are also supported: {backend-brand}, {backend-brand-custom},",
+        "{proxy-brand}, {proxy-brand-custom}, {proxy-version}, {proxy-vendor}, {server-connected},",
+        "{protocol-min}, {protocol-max}, {protocol}."
+    })
+    public String F3_BRAND_NAME = "LimboAPI ({VERSION}) -> {LIMBO_NAME}";
+
     @Comment("Used to hide unsigned chat popup")
     public boolean SEND_ENFORCE_SECURE_CHAT = true;
 

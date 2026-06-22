@@ -43,12 +43,12 @@ import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.crypto.IdentifiedKey;
 import com.velocitypowered.api.proxy.player.TabList;
+import com.velocitypowered.api.proxy.server.PlayerInfoForwarding;
 import com.velocitypowered.api.util.GameProfile;
 import com.velocitypowered.api.util.UuidUtils;
 import com.velocitypowered.natives.compression.VelocityCompressor;
 import com.velocitypowered.natives.util.Natives;
 import com.velocitypowered.proxy.VelocityServer;
-import com.velocitypowered.proxy.config.PlayerInfoForwarding;
 import com.velocitypowered.proxy.config.VelocityConfiguration;
 import com.velocitypowered.proxy.connection.MinecraftConnection;
 import com.velocitypowered.proxy.connection.client.AuthSessionHandler;
@@ -190,7 +190,7 @@ public class LoginListener {
           if (connection.getProtocolVersion().compareTo(ProtocolVersion.MINECRAFT_1_20_2) >= 0) {
             loginHandler.setPlayer(player);
           }
-          if (this.server.canRegisterConnection(player)) {
+          if (canRegisterConnection(player)) {
             if (!connection.isClosed()) {
               // Complete the Login process.
               int threshold = this.server.getConfiguration().getCompressionThreshold();
@@ -346,5 +346,13 @@ public class LoginListener {
     } catch (Throwable e) {
       throw new ReflectionException(e);
     }
+  }
+
+  /**
+   * Velocity has {@code VelocityServer#canRegisterConnection()}, Velocity-CTD doesn't.
+   * This helper method reduces the git diff to upstream LimboAPI.
+   */
+  private boolean canRegisterConnection(ConnectedPlayer player) {
+    return true;
   }
 }
