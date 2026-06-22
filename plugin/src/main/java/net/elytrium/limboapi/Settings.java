@@ -101,10 +101,7 @@ public class Settings extends YamlConfig {
 
     @Comment({
         "The brand shown in the client's F3 debug screen while in a Limbo.",
-        "LimboAPI placeholders: {VERSION} - LimboAPI version, {LIMBO_NAME} - the Limbo's name.",
-        "Velocity-CTD placeholders are also supported: {backend-brand}, {backend-brand-custom},",
-        "{proxy-brand}, {proxy-brand-custom}, {proxy-version}, {proxy-vendor}, {server-connected},",
-        "{protocol-min}, {protocol-max}, {protocol}."
+        "Placeholders: {VERSION} - LimboAPI version, {LIMBO_NAME} - the Limbo's name."
     })
     public String F3_BRAND_NAME = "LimboAPI ({VERSION}) -> {LIMBO_NAME}";
 

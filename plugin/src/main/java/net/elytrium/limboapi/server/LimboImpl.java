@@ -31,7 +31,6 @@ import com.velocitypowered.proxy.command.registrar.BrigadierCommandRegistrar;
 import com.velocitypowered.proxy.command.registrar.CommandRegistrar;
 import com.velocitypowered.proxy.command.registrar.RawCommandRegistrar;
 import com.velocitypowered.proxy.command.registrar.SimpleCommandRegistrar;
-import com.velocitypowered.proxy.config.VelocityConfiguration;
 import com.velocitypowered.proxy.connection.ConnectionTypes;
 import com.velocitypowered.proxy.connection.MinecraftConnection;
 import com.velocitypowered.proxy.connection.backend.VelocityServerConnection;
@@ -56,7 +55,6 @@ import com.velocitypowered.proxy.protocol.packet.config.RegistrySyncPacket;
 import com.velocitypowered.proxy.protocol.packet.config.StartUpdatePacket;
 import com.velocitypowered.proxy.protocol.packet.config.TagsUpdatePacket;
 import com.velocitypowered.proxy.protocol.packet.title.GenericTitlePacket;
-import com.velocitypowered.proxy.protocol.util.PluginMessageUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandler;
@@ -1481,16 +1479,7 @@ public class LimboImpl implements Limbo {
       ProtocolUtils.writeString(bufWithBrandString, brand);
     }
 
-    VelocityConfiguration configuration = this.plugin.getServer().getConfiguration();
-    return PluginMessageUtil.rewriteMinecraftBrand(
-        new PluginMessagePacket("MC|Brand", bufWithBrandString),
-        this.plugin.getServer().getVersion(),
-        version,
-        brand,
-        configuration.getProxyBrandCustom(),
-        configuration.getBackendBrandCustom(),
-        this.limboName,
-        ProtocolVersion.getVersionByName(configuration.getMinimumVersion()).getVersionIntroducedIn());
+    return new PluginMessagePacket("MC|Brand", bufWithBrandString);
   }
 
   private PositionRotationPacket createPlayerPosAndLook(double posX, double posY, double posZ, float yaw, float pitch) {
