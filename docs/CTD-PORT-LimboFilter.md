@@ -4,8 +4,9 @@ Guide for making **LimboFilter** build and run against the
 [Velocity-CTD](https://github.com/GemstoneGG/Velocity-CTD) fork, matching the
 CTD-compatible LimboAPI fork in this repository.
 
-> Run this in a Claude Code session **scoped to your fork of LimboFilter**, not
-> the LimboAPI repo. Fork `Elytrium/LimboFilter` into your account first.
+> Run this in a Claude Code session **scoped to your fork**
+> ([`Tung-Tung-Sahur4000/LimboFilter26`](https://github.com/Tung-Tung-Sahur4000/LimboFilter26)),
+> not the LimboAPI repo.
 
 ---
 
@@ -133,7 +134,7 @@ Runtime smoke test on a Velocity-CTD proxy:
 
 ## 7. Checklist
 
-- [ ] Forked `Elytrium/LimboFilter`, session scoped to the fork
+- [x] Forked to `Tung-Tung-Sahur4000/LimboFilter26` — open a session scoped to it
 - [ ] Added `velocityctd-repo` to `repositories`
 - [ ] Switched `com.velocitypowered` → `com.velocityctd` (api + proxy)
 - [ ] `gradle.properties`: `velocityVersion=3.5.0-SNAPSHOT`, `limboapiVersion=1.1.27`
