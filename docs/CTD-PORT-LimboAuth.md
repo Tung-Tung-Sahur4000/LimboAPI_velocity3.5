@@ -122,7 +122,7 @@ fork), so you do **not** need a special CTD build of the api to compile.
   ```
   then add `mavenLocal()` to LimboAuth's `repositories { }` (first entry).
 - **Runtime:** drop the **CTD LimboAPI plugin jar** built from this repo
-  (`limboapi-1.1.27-SNAPSHOT.jar`) into `plugins/` next to LimboAuth.
+  (`limboapi-ctd-1.1.27-SNAPSHOT.jar`) into `plugins/` next to LimboAuth.
 
 ## 5. Source-adaptation reference (apply only if compile fails)
 
@@ -158,7 +158,7 @@ prerelease jar.
 
 Runtime smoke test on a Velocity-CTD proxy:
 
-1. `plugins/`: CTD `limboapi-1.1.27-SNAPSHOT.jar` + your new LimboAuth jar.
+1. `plugins/`: CTD `limboapi-ctd-1.1.27-SNAPSHOT.jar` + your new LimboAuth jar.
 2. Start the proxy. Expect LimboAuth to load and complete
    `ProxyInitializeEvent` with **no** `NoSuchMethodError` / `ReflectionException`.
 3. Join the server and confirm the auth (register/login) limbo flow works.

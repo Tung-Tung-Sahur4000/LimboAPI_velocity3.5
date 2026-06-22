@@ -92,7 +92,7 @@ fork), so you do **not** need a special CTD build of the api to compile.
   ```
   then add `mavenLocal()` to LimboFilter's `repositories { }` (first entry).
 - **Runtime:** drop the **CTD LimboAPI plugin jar** built from this repo
-  (`limboapi-1.1.27-SNAPSHOT.jar`) into `plugins/` next to LimboFilter.
+  (`limboapi-ctd-1.1.27-SNAPSHOT.jar`) into `plugins/` next to LimboFilter.
 
 ## 5. Source-adaptation reference (apply only if compile fails)
 
@@ -127,7 +127,7 @@ project's `build/libs/`). The repo's CI (if present, like LimboAPI's
 
 Runtime smoke test on a Velocity-CTD proxy:
 
-1. `plugins/`: CTD `limboapi-1.1.27-SNAPSHOT.jar` + your new LimboFilter jar.
+1. `plugins/`: CTD `limboapi-ctd-1.1.27-SNAPSHOT.jar` + your new LimboFilter jar.
 2. Start the proxy. Expect LimboFilter to load and
    `Captcha generated in N ms` with **no** `NoSuchMethodError` /
    `ReflectionException` during `ProxyInitializeEvent`.

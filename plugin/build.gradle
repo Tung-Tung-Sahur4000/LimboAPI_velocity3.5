@@ -42,7 +42,7 @@ dependencies() {
 
 shadowJar() {
   getArchiveClassifier().set("")
-  setArchiveFileName("limboapi-${project.version}.jar")
+  setArchiveFileName("limboapi-ctd-${project.version}.jar")
 
   exclude("META-INF/versions/**")
   exclude("net/kyori/**")
